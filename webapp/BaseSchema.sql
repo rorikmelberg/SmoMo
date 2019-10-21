@@ -1,0 +1,38 @@
+--
+-- File generated with SQLiteStudio v3.2.1 on Sun Oct 20 17:39:08 2019
+--
+-- Text encoding used: System
+--
+PRAGMA foreign_keys = off;
+BEGIN TRANSACTION;
+
+-- Table: Cook
+CREATE TABLE Cook (
+  Id INTEGER PRIMARY KEY AUTOINCREMENT,
+  Title nvarchar[256],
+  CookStart TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CookEnd TIMESTAMP NULL
+);
+
+-- Table: ErrorLog
+CREATE TABLE ErrorLog (
+  ErrorLogId INTEGER PRIMARY KEY AUTOINCREMENT,
+  EventDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+  Error TEXT NOT NULL);
+
+-- Table: Sensors
+CREATE TABLE Sensors (
+  SensorId INTEGER PRIMARY KEY NOT NULL, 
+  SensorName STRING (255)
+  );
+
+-- Table: TempLog
+CREATE TABLE TempLog (
+  Id INTEGER PRIMARY KEY AUTOINCREMENT,
+  SensorNum int NOT NULL,
+  EventDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  Temp FLOAT NOT NULL
+);
+
+COMMIT TRANSACTION;
+PRAGMA foreign_keys = on;
