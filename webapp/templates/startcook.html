@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>Start Cook</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    Title: <input type='text' id='title' name='title'/>
+    <input type='submit' value='Start Cook'>
+  </form>
+{% endblock %}

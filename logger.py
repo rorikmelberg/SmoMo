@@ -14,42 +14,48 @@ from adafruit_mcp3xxx.analog_in import AnalogIn
 # Set debug = 1 if you want the debug output
 DEBUG = 0
 
+sqliteFile = '/home/pi/Projects/SmokerMonitor/instance/flaskr.sqlite'
+
 def main():
+    cookId = get_current_cook()
     
-    # create the spi bus
-    spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
-    
-    # create the cs (chip select)
-    cs = digitalio.DigitalInOut(board.CE0)
-    
-    # create the mcp object
-    mcp = MCP.MCP3008(spi, cs)
-    
-    channels = [MCP.P0, MCP.P1, MCP.P2]
+    if DEBUG:
+        print("CookId: {0}".format(cookId))
 
-    for channel in channels:
+    if cookId > 0:
 
-        # create an analog input channel on pin 0
-        chan = AnalogIn(mcp, channel)
-        value = chan.value
+        # create the spi bus
+        spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
         
-        if DEBUG:
-            print('Value: {0} Voltage: {1}'.format(value, chan.voltage))
+        # create the cs (chip select)
+        cs = digitalio.DigitalInOut(board.CE0)
         
-        if value != 0:
-            temp = temp_calc(chan.voltage)
-            temp = int(temp)
-            if DEBUG:
-                print("value: {0} {1} {2}".format(value, temp, channel))
-            
-            log_temperature(channel, temp)
+        # create the mcp object
+        mcp = MCP.MCP3008(spi, cs)
+        
+        channels = [MCP.P0, MCP.P1, MCP.P2]
 
-        #log temperature of 0 if sensor is not connected
-        if value == 0:
-            if DEBUG:
-                print("value: {0} {1}".format(value, channel))
+        for channel in channels:
+
+            # create an analog input channel on pin 0
+            chan = AnalogIn(mcp, channel)
+            value = chan.value
             
-            log_temperature(channel, 0)
+            if DEBUG:
+                print('Value: {0} Voltage: {1}'.format(value, chan.voltage))
+            
+            if value != 0:
+                temp = temp_calc(chan.voltage)
+                temp = int(temp)
+                if DEBUG:
+                    print("value: {0} {1} {2}".format(value, temp, channel))
+                
+                log_temperature(channel, temp, cookId)
+
+            #log temperature of 0 if sensor is not connected
+            if value == 0:
+                if DEBUG:
+                    print("value: {0} {1}".format(value, channel))
 
 def temp_calc(volts):
     ohms = ((1/volts)*3300)-1000 #calculate the ohms of the thermististor
@@ -78,15 +84,31 @@ def temp_calc(volts):
 
     return tempf
     
-def log_temperature(sensorNum,temp):
+def log_temperature(sensorNum,temp, cookId):
 
-    conn=sqlite3.connect('/home/pi/Projects/SmokerMonitor/instance/flaskr.sqlite')
+    conn=sqlite3.connect(sqliteFile)
     curs=conn.cursor()
-    curs.execute("INSERT INTO TempLog (SensorNum,Temp) values((?), (?))", (sensorNum, temp))
+    curs.execute("INSERT INTO TempLog (SensorNum,Temp,CookId) values((?), (?), (?))", (sensorNum, temp, cookId))
 
     # commit the changes
     conn.commit()
     conn.close()
 
+def get_current_cook():
+
+    conn=sqlite3.connect(sqliteFile)
+    cur = conn.cursor()
+
+    cur.execute("SELECT CookId FROM Cooks where CookEnd is null")
+ 
+    rows = cur.fetchall()
+ 
+    if len(rows) > 0:
+        cookId = rows[0][0]
+    else:
+        cookId = 0
+    
+    return cookId
+    
 if __name__ == "__main__":
     main()

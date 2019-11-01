@@ -1,5 +1,40 @@
-<html>
-<body>
-<h1>Smoker Monitor</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block header %}
+<h1></h1>
+{% endblock %}
+
+{% block content %}
+<h1>Welcome to Smoker Monitor</h1>
+<a href='startcook'>Edit Cook</a>
+Title: {{ title }}
+Start: {{ start }}
+Duration: {{ duration }}
+<table>
+  <tr>
+    <td>Sensor 1</td>
+    <td>{{ s1Min }}</td>
+    <td>{{ s1Max }}</td>
+  </tr>
+  <tr>
+    <td>Sensor 2</td>
+    <td>{{ s2Min }}</td>
+    <td>{{ s2Max }}</td>
+  </tr>
+  <tr>
+    <td>AirTemp</td>
+    <td>{{ airMin }}</td>
+    <td>{{ airMax }}</td>
+  </tr>
+</table>
+
+<table>
+  <th>
+  <td>Date Stamp</td>
+  <td>Sensor 1</td>
+  <td>Sensor 2</td>
+  <td>Air Temp</td>
+  </th>
+</table>
+
+{% endblock %}
