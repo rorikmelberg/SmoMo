@@ -14,6 +14,17 @@ class Cook:
         self.Start = ''
         self.End = ''
 
+def convertTime(fromTime):
+    import pytz
+    print('fromTime: {0}'.format(fromTime))
+    pacific = pytz.timezone('US/Pacific')
+    toTime = fromTime.astimezone(pacific)
+
+    print('toTime: {0}'.format(toTime))
+    # print(datetime.tzinfo.tzname())
+
+    return fromTime
+
 def getCurrentCook():
     db = wadb.get_db()
 
@@ -23,7 +34,8 @@ def getCurrentCook():
     if rtn is not None:
         newCook.CookId = rtn[0]
         newCook.Title = rtn[1]
-        newCook.Start = datetime.datetime.now(rtn[2])
+        localTime = convertTime(rtn[2])
+        newCook.Start = localTime
         newCook.End = rtn[3]
     
     return newCook

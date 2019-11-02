@@ -2,6 +2,7 @@ import os
 import functools
 from webapp.db import get_db
 import webapp.CookDL as CookDL
+import webapp.TempDL as TempDL
 
 from flask import Blueprint
 from flask import flash
@@ -41,62 +42,58 @@ def create_app(test_config=None):
         title = ''
         start = ''
         duration = ''
-        s1Min = ''
-        s1Max = ''
-        s2Min = ''
-        s2Max = ''
-        airMin = ''
-        airMax = ''
-
+        latestTime = [datetime(2019,1,1), datetime(2019,1,1), datetime(2019,1,1)]
+        latestTemp = [0, 0, 0]
+        minTemp = [9999, 9999, 9999]
+        maxTemp = [0, 0, 0]
+        temps = []
+        
         if currentCook.CookId > 0:
             title = currentCook.Title
             start = currentCook.Start
-            print(currentCook.Start)
-            print(datetime.now())
-            print(type(currentCook.Start))
-            print(type(datetime.now()))
+            calcDuration = (datetime.now() - currentCook.Start)
+            duration = str(calcDuration)
 
-            calcDuration = (currentCook.Start - datetime.now())
-            print(calcDuration)
-            duration = "{0} h {1} m".format(calcDuration.hour, calcDuration.minute)
+            temps = TempDL.getTempsForCook(currentCook.CookId)
+
+          
+            for x in temps:
+                if x.EventDate > latestTime[x.SensorNum]:
+                    latestTime[x.SensorNum] = x.EventDate
+                    latestTemp[x.SensorNum] = x.Temp
+                
+                if x.Temp < minTemp[x.SensorNum]:
+                    minTemp[x.SensorNum] = x.Temp
+                
+                if x.Temp > maxTemp[x.SensorNum]:
+                    maxTemp[x.SensorNum] = x.Temp
 
         return render_template('index.html', title = title, 
                                                 start = start, 
                                                 duration = duration, 
-                                                s1Min = s1Min,
-                                                s1Max = s1Max,
-                                                s2Min = s2Min,
-                                                s2Max = s2Max,
-                                                airMin = airMin,
-                                                airMax = airMax)
+                                                latestTime = latestTime,
+                                                latestTemp = latestTemp,
+                                                minTemp = minTemp,
+                                                maxTemp = maxTemp,
+                                                temps = temps)
 
-    @app.route('/startcook', methods=['GET', 'POST'])
+    @app.route('/editcook', methods=['GET', 'POST'])
     def startcook():
+        currentCook = CookDL.getCurrentCook()
         if request.method == "POST":
-            title = request.form["title"]
-            CookDL.startCook(title)
-            return redirect('\\')
-        else:
-            currentCook = CookDL.getCurrentCook()
-            if currentCook.CookId > 0:
-                return render_template('endcook.html', title=title)    
-            
-            return render_template('startcook.html')
-
-    @app.route('/endcook', methods=['GET', 'POST'])
-    def endcook():
-        if request.method == "POST":
-            CookDL.endCurrentCook()
-            return redirect('\\')
-        else:
-            currentCook = CookDL.getCurrentCook()
             if currentCook.CookId == 0:
-                return render_template('startcook.html')    
-            
-            title = currentCook.Title
-            return render_template('endcook.html', title=title)
+                title = request.form["title"]
+                CookDL.startCook(title)
+            else:
+                CookDL.endCurrentCook()    
+            return redirect('\\')
 
-
+        else:
+            if currentCook.CookId == 0:
+                return render_template('startcook.html')
+            else:
+                title = currentCook.Title
+                return render_template('endcook.html', title=title)
 
     from . import db
     db.init_app(app)
