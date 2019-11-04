@@ -42,32 +42,33 @@ def create_app(test_config=None):
         title = ''
         start = ''
         duration = ''
-        latestTime = [datetime(2019,1,1), datetime(2019,1,1), datetime(2019,1,1)]
+        latestTime = datetime(2019,1,1)
         latestTemp = [0, 0, 0]
         minTemp = [9999, 9999, 9999]
         maxTemp = [0, 0, 0]
         temps = []
-        
+
         if currentCook.CookId > 0:
             title = currentCook.Title
             start = currentCook.Start
             calcDuration = (datetime.now() - currentCook.Start)
             duration = str(calcDuration)
-
             temps = TempDL.getTempsForCook(currentCook.CookId)
 
-          
             for x in temps:
-                if x.EventDate > latestTime[x.SensorNum]:
-                    latestTime[x.SensorNum] = x.EventDate
-                    latestTemp[x.SensorNum] = x.Temp
-                
+                if x.EventDate > latestTime:
+                    latestTime = x.EventDate
+                    latestTemp[0] = x.Temp1
+                    latestTemp[1] = x.Temp2
+                    latestTemp[2] = x.Temp3
+                """
                 if x.Temp < minTemp[x.SensorNum]:
                     minTemp[x.SensorNum] = x.Temp
                 
                 if x.Temp > maxTemp[x.SensorNum]:
                     maxTemp[x.SensorNum] = x.Temp
-
+                """
+                
         return render_template('index.html', title = title, 
                                                 start = start, 
                                                 duration = duration, 
@@ -75,7 +76,8 @@ def create_app(test_config=None):
                                                 latestTemp = latestTemp,
                                                 minTemp = minTemp,
                                                 maxTemp = maxTemp,
-                                                temps = temps)
+                                                temps = temps,
+                                                values=temps)
 
     @app.route('/editcook', methods=['GET', 'POST'])
     def startcook():

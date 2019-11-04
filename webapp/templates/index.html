@@ -6,47 +6,84 @@
 
 {% block content %}
 <h1>Welcome to Smoker Monitor</h1>
-<a href='\editcook'>Edit Cook</a><br/>
-Title: {{ title }}<br/>
-Start: {{ start }}<br/>
-Duration: {{ duration }}<br/>
-<br/>
-<table>
+<div style='float:left'>
+  <a href='\editcook'>Edit Cook</a><br />
+  Title: {{ title }}<br />
+  Start: {{ start }}<br />
+  Duration: {{ duration }}<br />
+</div>
+<div style='float:left'>
+  <table>
     <tr>
-        <td>Sensor</td>
-        <td>Min</td>
-        <td>Max</td>
-      </tr>
-  <tr>
-    <td>Sensor 1</td>
-    <td>{{ minTemp[0] }}</td>
-    <td>{{ maxTemp[0] }}</td>
-  </tr>
-  <tr>
-    <td>Sensor 2</td>
-    <td>{{  minTemp[1] }}</td>
-    <td>{{  maxTemp[1] }}</td>
-  </tr>
-  <tr>
-    <td>AirTemp</td>
-    <td>{{  minTemp[2] }}</td>
-    <td>{{  maxTemp[2] }}</td>
-  </tr>
-</table>
-
-<table>
-  <th>
-  <td>Date Stamp</td>
-  <td>Sensor 1</td>
-  <td>Sensor 2</td>
-  <td>Air Temp</td>
-  </th>
-  {% for temp in temps %}
-    <tr>
-      <td>{{ temp['EventDate'] }}</td>
-      <td>{{ temp['Temp'] }}</td>
+      <td>Sensor</td>
+      <td>Min</td>
+      <td>Max</td>
     </tr>
-  {% endfor %}
-</table>
+    <tr>
+      <td>Sensor 1</td>
+      <td>{{ minTemp[0] }}</td>
+      <td>{{ maxTemp[0] }}</td>
+    </tr>
+    <tr>
+      <td>Sensor 2</td>
+      <td>{{  minTemp[1] }}</td>
+      <td>{{  maxTemp[1] }}</td>
+    </tr>
+    <tr>
+      <td>AirTemp</td>
+      <td>{{  minTemp[2] }}</td>
+      <td>{{  maxTemp[2] }}</td>
+    </tr>
+  </table>
+</div>
+<script src="static/Chart.bundle.min.js"></script>
+<script src="static/utils.js"></script>
+
+<canvas id="chart"></canvas>
+<script>
+  var ctx = document.getElementById('chart').getContext('2d');
+  var myChart = new Chart(ctx,
+    {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'Sensor 1',
+          data: [
+              {% for item in temps %}{ x: '{{item.EventDate}}', y: {{ item.Temp1 }}, }, {% endfor %}
+              ],
+          backgroundColor: window.chartColors.red,
+					borderColor: window.chartColors.red,
+					fill: false,
+      borderWidth: 1
+      },
+      {
+          label: 'Sensor 2',
+          backgroundColor: window.chartColors.blue,
+					borderColor: window.chartColors.blue,
+					fill: false,
+          data: [
+              {% for item in temps %}{ x: '{{item.EventDate}}', y: {{ item.Temp2 }}, }, {% endfor %}
+              ],
+      },
+      {
+          label: 'Sensor 3',
+          backgroundColor: window.chartColors.green,
+					borderColor: window.chartColors.green,
+					fill: false,
+          data: [
+              {% for item in temps %}{ x: '{{item.EventDate}}', y: {{ item.Temp3 }}, }, {% endfor %}
+              ],
+      },
+    ]},
+  options: {
+    scales: {
+      xAxes: [{
+        type: 'time',
+        time: { displayFormats: { quarter: 'h:mm a' } }
+      }]
+    }
+  }
+  });
+</script>
 
 {% endblock %}
