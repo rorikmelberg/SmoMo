@@ -39,9 +39,6 @@ def create_app(test_config=None):
     @app.route('/')
     def index():
         currentCook = CookDL.getCurrentCook()
-        title = ''
-        start = ''
-        duration = ''
         latestTime = datetime(2019,1,1)
         latestTemp = [0, 0, 0]
         minTemp = [9999, 9999, 9999]
@@ -49,10 +46,6 @@ def create_app(test_config=None):
         temps = []
 
         if currentCook.CookId > 0:
-            title = currentCook.Title
-            start = currentCook.Start
-            calcDuration = (datetime.now() - currentCook.Start)
-            duration = str(calcDuration)
             temps = TempDL.getTempsForCook(currentCook.CookId)
 
             for x in temps:
@@ -69,15 +62,14 @@ def create_app(test_config=None):
                     maxTemp[x.SensorNum] = x.Temp
                 """
                 
-        return render_template('index.html', title = title, 
-                                                start = start, 
-                                                duration = duration, 
+        return render_template('index.html', cook = currentCook, 
                                                 latestTime = latestTime,
                                                 latestTemp = latestTemp,
                                                 minTemp = minTemp,
                                                 maxTemp = maxTemp,
                                                 temps = temps,
-                                                values=temps)
+                                                values=temps,
+                                                currentDT=datetime.now())
 
     @app.route('/editcook', methods=['GET', 'POST'])
     def startcook():
@@ -85,7 +77,9 @@ def create_app(test_config=None):
         if request.method == "POST":
             if currentCook.CookId == 0:
                 title = request.form["title"]
-                CookDL.startCook(title)
+                smokerTarget =  request.form["smokerTarget"]
+                target =  request.form["target"]
+                CookDL.startCook(title, smokerTarget, target)
             else:
                 CookDL.endCurrentCook()    
             return redirect('\\')

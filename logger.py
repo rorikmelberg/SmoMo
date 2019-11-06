@@ -10,6 +10,7 @@ import board
 import time
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
+from datetime import datetime
 
 # Set debug = 1 if you want the debug output
 DEBUG = 0
@@ -114,7 +115,7 @@ def log_temperature(temps, cookId):
             
     conn=sqlite3.connect(sqliteFile)
     curs=conn.cursor()
-    curs.execute("INSERT INTO TempLog (Temp1, Temp2, Temp3, CookId) VALUES(?, ?, ?, ?)", (temps[0], temps[1], temps[2], cookId))
+    curs.execute("INSERT INTO TempLog (EventDate, Temp1, Temp2, Temp3, CookId) VALUES(?, ?, ?, ?, ?)", (datetime.now(), temps[0], temps[1], temps[2], cookId))
 
     # commit the changes
     conn.commit()

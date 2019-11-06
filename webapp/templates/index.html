@@ -5,13 +5,13 @@
 {% endblock %}
 
 {% block content %}
-<h1>Welcome to Smoker Monitor</h1>
 <div style='float:left'>
   <a href='\editcook'>Edit Cook</a><br />
-  Title: {{ title }}<br />
-  Start: {{ start }}<br />
-  Duration: {{ duration }}<br />
+  Title: {{ cook.Title }}<br />
+  Start: {{ cook.Start }}<br />
+  Duration: {{ cook.Duration }}<br />
 </div>
+
 <div style='float:left'>
   <table>
     <tr>
@@ -49,7 +49,9 @@
         datasets: [{
           label: 'Sensor 1',
           data: [
-              {% for item in temps %}{ x: '{{item.EventDate}}', y: {{ item.Temp1 }}, }, {% endfor %}
+              {% for item in temps %}
+                {% if item.Temp1 > 0 %} { x: '{{item.EventDate}}', y: {{ item.Temp1 }}, }, {% endif %}
+              {% endfor %}
               ],
           backgroundColor: window.chartColors.red,
 					borderColor: window.chartColors.red,
@@ -62,7 +64,9 @@
 					borderColor: window.chartColors.blue,
 					fill: false,
           data: [
-              {% for item in temps %}{ x: '{{item.EventDate}}', y: {{ item.Temp2 }}, }, {% endfor %}
+              {% for item in temps %}
+              {% if item.Temp2 > 0 %} { x: '{{item.EventDate}}', y: {{ item.Temp2 }}, }, {% endif %}
+              {% endfor %}
               ],
       },
       {
@@ -71,8 +75,26 @@
 					borderColor: window.chartColors.green,
 					fill: false,
           data: [
-              {% for item in temps %}{ x: '{{item.EventDate}}', y: {{ item.Temp3 }}, }, {% endfor %}
+              {% for item in temps %}
+                {% if item.Temp3 > 0 %} { x: '{{item.EventDate}}', y: {{ item.Temp3 }}, }, {% endif %}
+              {% endfor %}
               ],
+      },
+      {
+          label: 'Smoker Target',
+          backgroundColor: window.chartColors.grey,
+					borderColor: window.chartColors.green,
+					fill: false,
+          data: [ { x: '{{cook.Start}}', y: '{{cook.SmokerTarget}}' }, 
+                  { x: '{{currentDT}}', y: '{{cook.SmokerTarget}}' }],
+      },
+      {
+          label: 'Target',
+          backgroundColor: window.chartColors.grey,
+					borderColor: window.chartColors.green,
+					fill: false,
+          data: [ { x: '{{cook.Start}}', y: '{{cook.Target}}' }, 
+                  { x: '{{currentDT}}', y: '{{cook.Target}}' }],
       },
     ]},
   options: {
