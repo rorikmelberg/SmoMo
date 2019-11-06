@@ -5,14 +5,14 @@
 {% endblock %}
 
 {% block content %}
-<div style='float:left'>
+<div class='container-fluid'>
   <a href='\editcook'>Edit Cook</a><br />
-  Title: {{ cook.Title }}<br />
+  Title: <span id='Title'></span><br />
   Start: {{ cook.Start }}<br />
-  Duration: {{ cook.Duration }}<br />
+  Duration: <span id='Duration'></span><br />
 </div>
 
-<div style='float:left'>
+<div class='container-fluid'>
   <table>
     <tr>
       <td>Sensor</td>
@@ -48,11 +48,7 @@
       data: {
         datasets: [{
           label: 'Sensor 1',
-          data: [
-              {% for item in temps %}
-                {% if item.Temp1 > 0 %} { x: '{{item.EventDate}}', y: {{ item.Temp1 }}, }, {% endif %}
-              {% endfor %}
-              ],
+          data: [],
           backgroundColor: window.chartColors.red,
 					borderColor: window.chartColors.red,
 					fill: false,
@@ -63,22 +59,14 @@
           backgroundColor: window.chartColors.blue,
 					borderColor: window.chartColors.blue,
 					fill: false,
-          data: [
-              {% for item in temps %}
-              {% if item.Temp2 > 0 %} { x: '{{item.EventDate}}', y: {{ item.Temp2 }}, }, {% endif %}
-              {% endfor %}
-              ],
+          data: [],
       },
       {
           label: 'Sensor 3',
           backgroundColor: window.chartColors.green,
 					borderColor: window.chartColors.green,
 					fill: false,
-          data: [
-              {% for item in temps %}
-                {% if item.Temp3 > 0 %} { x: '{{item.EventDate}}', y: {{ item.Temp3 }}, }, {% endif %}
-              {% endfor %}
-              ],
+          data: [],
       },
       {
           label: 'Smoker Target',
@@ -106,6 +94,39 @@
     }
   }
   });
+
+</script>
+<a id='calculate' href=#>Calculate</a>
+<script type=text/javascript>
+
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+  $(document).ready(function()
+  {
+    setInterval(getData,5000);
+
+    getData();
+
+    function getData()
+    {
+      $.getJSON($SCRIPT_ROOT + '/getdata', {} , 
+      function(data) 
+      {
+        myChart.data.datasets[0].data = data['Temp1'];
+        myChart.data.datasets[1].data = data['Temp2'];
+        myChart.data.datasets[2].data = data['Temp3'];
+        myChart.data.datasets[3].data = data['smokerTarget'];
+        myChart.data.datasets[4].data = data['target'];
+        
+        $("#Duration").text(data['duration']);
+
+        // re-render the chart
+        myChart.update();
+      });
+      return false;
+    }
+  });
+
 </script>
 
-{% endblock %}
+{% endblock %}              

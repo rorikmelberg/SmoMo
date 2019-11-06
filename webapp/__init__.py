@@ -12,8 +12,24 @@ from flask import render_template
 from flask import request
 from flask import  url_for
 from flask import Flask, render_template
+from flask import jsonify
 
 from datetime import datetime
+
+def GenerateTargetData(start, end, value):
+    series = []
+    
+    valPair = {}
+    valPair['x'] = start.strftime('%Y-%m-%d %H:%M:%S.%s')
+    valPair['y'] = value
+    series.append(valPair)
+
+    valPair = {}
+    valPair['x'] = end.strftime('%Y-%m-%d %H:%M:%S.%s')
+    valPair['y'] = value
+    series.append(valPair)
+
+    return series
 
 def create_app(test_config=None):
     # create and configure the app
@@ -37,6 +53,7 @@ def create_app(test_config=None):
         pass
 
     @app.route('/')
+    @app.route('/index')
     def index():
         currentCook = CookDL.getCurrentCook()
         latestTime = datetime(2019,1,1)
@@ -82,7 +99,7 @@ def create_app(test_config=None):
                 CookDL.startCook(title, smokerTarget, target)
             else:
                 CookDL.endCurrentCook()    
-            return redirect('\\')
+            return redirect(url_for('index'))
 
         else:
             if currentCook.CookId == 0:
@@ -90,6 +107,54 @@ def create_app(test_config=None):
             else:
                 title = currentCook.Title
                 return render_template('endcook.html', title=title)
+
+
+    @app.route('/getdata', methods=['GET']) 
+    def add_numbers():
+        currentCook = CookDL.getCurrentCook()
+        if currentCook.CookId > 0:
+            allData = {}
+            
+            allData['duration'] = currentCook.Duration
+            # allData['latestTime'] = ,
+            # allData['latestTemp'] = latestTemp,
+            allData['cookStart']= currentCook.Start.strftime('%Y-%m-%d %H:%M:%S.%s')
+            allData['currentDT']=datetime.now()
+            
+            allData['smokerTarget'] = GenerateTargetData(currentCook.Start, datetime.now(), currentCook.SmokerTarget)
+            allData['target'] = GenerateTargetData(currentCook.Start, datetime.now(), currentCook.Target)
+            
+            temps = TempDL.getTempsForCook(currentCook.CookId)
+            
+            temps1 = []
+            temps2 = []
+            temps3 = []
+            
+            for x in temps:
+                formattedDate = x.EventDate.strftime('%Y-%m-%d %H:%M:%S.%s')
+
+                temp1 = {}
+                temp1['x'] = formattedDate
+                temp1['y'] = x.Temp1
+                temps1.append(temp1)
+
+                temp2 = {}
+                temp2['x'] = formattedDate
+                temp2['y'] = x.Temp2
+                temps2.append(temp2)
+
+                temp3 = {}
+                temp3['x'] = formattedDate
+                temp3['y'] = x.Temp3
+                temps3.append(temp3)
+            
+            allData['Temp1'] = temps1
+            allData['Temp2'] = temps2
+            allData['Temp3'] = temps3
+
+            return jsonify(allData)
+
+        return jsonify('')
 
     from . import db
     db.init_app(app)
