@@ -115,6 +115,8 @@ def create_app(test_config=None):
         if currentCook.CookId > 0:
             allData = {}
             
+            date = request.args.get('lastUpdate')
+
             allData['duration'] = currentCook.Duration
             # allData['latestTime'] = ,
             # allData['latestTemp'] = latestTemp,
@@ -123,8 +125,15 @@ def create_app(test_config=None):
             
             allData['smokerTarget'] = GenerateTargetData(currentCook.Start, datetime.now(), currentCook.SmokerTarget)
             allData['target'] = GenerateTargetData(currentCook.Start, datetime.now(), currentCook.Target)
+            currentDate = datetime.now()
+            allData['lastUpdate'] = currentDate.strftime('%Y-%m-%d %H:%M:%S.%s')
+
+            temps = []
             
-            temps = TempDL.getTempsForCook(currentCook.CookId)
+            if date:
+                temps = TempDL.getTempsForCookUpdate(currentCook.CookId, date)
+            else:
+                temps = TempDL.getTempsForCook(currentCook.CookId)
             
             temps1 = []
             temps2 = []

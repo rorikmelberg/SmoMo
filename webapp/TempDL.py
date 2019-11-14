@@ -39,5 +39,26 @@ def getTempsForCook(cookId):
         temps.append(temp)
     return temps
 
+def getTempsForCookUpdate(cookId, date):
+    db = wadb.get_db()
+
+    rtn = db.execute('SELECT TempLogId, EventDate, Temp1, Temp2, Temp3, CookId '
+                        'FROM TempLog WHERE CookId = ? '
+                        '  AND EventDate > ?'
+                        'ORDER BY EventDate DESC', (cookId, date)).fetchall()
+    temps = []
+
+    for x in rtn:
+        temp = TempLog()
+        temp.TempLogId = x[0]
+        temp.EventDate = dh.convertTime(x[1])
+        temp.Temp1 = x[2]
+        temp.Temp2= x[3]
+        temp.Temp3 = x[4]
+        temp.CookId = x[5]
+        
+        temps.append(temp)
+    return temps
+
 if __name__ == "__main__":
     getTempsForCook(1)

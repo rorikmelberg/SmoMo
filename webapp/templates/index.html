@@ -100,23 +100,33 @@
 <script type=text/javascript>
 
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  lastUpdate = null
 
   $(document).ready(function()
   {
-    setInterval(getData,5000);
+    setInterval(getData,10000);
 
     getData();
 
     function getData()
     {
-      $.getJSON($SCRIPT_ROOT + '/getdata', {} , 
+      var url = $SCRIPT_ROOT + '/getdata'
+      
+      if(lastUpdate != null)
+      {
+        url = url.concat('?lastUpdate=',lastUpdate);
+      }
+
+      $.getJSON(url, {} , 
       function(data) 
       {
-        myChart.data.datasets[0].data = data['Temp1'];
-        myChart.data.datasets[1].data = data['Temp2'];
-        myChart.data.datasets[2].data = data['Temp3'];
+        updateChart(data['Temp1'], 0);
+        updateChart(data['Temp2'], 1);
+        updateChart(data['Temp3'], 2);
+        
         myChart.data.datasets[3].data = data['smokerTarget'];
         myChart.data.datasets[4].data = data['target'];
+        lastUpdate = data['lastUpdate']
         
         $("#Duration").text(data['duration']);
 
@@ -124,6 +134,25 @@
         myChart.update();
       });
       return false;
+    }
+
+    function updateChart(newData, offset)
+    {
+      if(newData.length > 0)
+      {
+        if(myChart.data.datasets[offset].data.length == 0)
+        {
+          myChart.data.datasets[offset].data = newData;  
+        }
+        else
+        {
+          myChart.data.datasets[offset].data.forEach(dataItem => {
+            newData.push(dataItem);  
+          });
+          
+          myChart.data.datasets[offset].data = newData;
+        }
+      }
     }
   });
 
