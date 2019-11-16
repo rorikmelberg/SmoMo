@@ -16,23 +16,19 @@
   <table>
     <tr>
       <td>Sensor</td>
-      <td>Min</td>
-      <td>Max</td>
+      <td>Current</td>
     </tr>
     <tr>
       <td>Sensor 1</td>
-      <td>{{ minTemp[0] }}</td>
-      <td>{{ maxTemp[0] }}</td>
+      <td><span id='sensor1Current'></span></td>
     </tr>
     <tr>
       <td>Sensor 2</td>
-      <td>{{  minTemp[1] }}</td>
-      <td>{{  maxTemp[1] }}</td>
+      <td><span id='sensor2Current'></span></td>
     </tr>
     <tr>
       <td>AirTemp</td>
-      <td>{{  minTemp[2] }}</td>
-      <td>{{  maxTemp[2] }}</td>
+      <td><span id='sensor3Current'></span></td>
     </tr>
   </table>
 </div>
@@ -104,9 +100,9 @@
 
   $(document).ready(function()
   {
-    setInterval(getData,10000);
-
     getData();
+
+    setInterval(getData,10000);
 
     function getData()
     {
@@ -129,6 +125,9 @@
         lastUpdate = data['lastUpdate']
         
         $("#Duration").text(data['duration']);
+        $("#sensor1Current").text(data['Sensor1Current']);
+        $("#sensor2Current").text(data['Sensor2Current']);
+        $("#sensor3Current").text(data['Sensor3Current']);
 
         // re-render the chart
         myChart.update();

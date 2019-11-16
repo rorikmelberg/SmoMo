@@ -127,7 +127,7 @@ def create_app(test_config=None):
             allData['target'] = GenerateTargetData(currentCook.Start, datetime.now(), currentCook.Target)
             currentDate = datetime.now()
             allData['lastUpdate'] = currentDate.strftime('%Y-%m-%d %H:%M:%S.%s')
-
+            
             temps = []
             
             if date:
@@ -139,6 +139,12 @@ def create_app(test_config=None):
             temps2 = []
             temps3 = []
             
+            if len(temps) > 0:
+                allData['Sensor1Current'] = temps[0].Temp1
+                allData['Sensor2Current'] = temps[0].Temp1
+                allData['Sensor3Current'] = temps[0].Temp1
+
+
             for x in temps:
                 formattedDate = x.EventDate.strftime('%Y-%m-%d %H:%M:%S.%s')
 
