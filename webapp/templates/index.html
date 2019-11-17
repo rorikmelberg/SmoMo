@@ -1,41 +1,51 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1></h1>
 {% endblock %}
 
 {% block content %}
-<div class='container-fluid'>
-  <a href='\editcook'>Edit Cook</a><br />
-  Title: <span id='Title'></span><br />
-  Start: {{ cook.Start }}<br />
-  Duration: <span id='Duration'></span><br />
-</div>
-
-<div class='container-fluid'>
-  <table>
-    <tr>
-      <td>Sensor</td>
-      <td>Current</td>
-    </tr>
-    <tr>
-      <td>Sensor 1</td>
-      <td><span id='sensor1Current'></span></td>
-    </tr>
-    <tr>
-      <td>Sensor 2</td>
-      <td><span id='sensor2Current'></span></td>
-    </tr>
-    <tr>
-      <td>AirTemp</td>
-      <td><span id='sensor3Current'></span></td>
-    </tr>
-  </table>
-</div>
 <script src="static/Chart.bundle.min.js"></script>
 <script src="static/utils.js"></script>
 
-<canvas id="chart"></canvas>
+<span id='CookId' style='display: none;'>{{ cook.CookId }}</span>
+
+<div class="container">
+  <div class="row">
+
+    <div class='class="col-sm"'>
+      Title: <span id='Title'></span><br />
+      Start: {{ cook.Start }}<br />
+      Duration: <span id='Duration'></span><br />
+    </div>
+
+    <div class='class="col-sm"'>
+
+      <table>
+        <tr>
+          <td>Sensor</td>
+          <td>Current</td>
+        </tr>
+        <tr>
+          <td>Sensor 1</td>
+          <td><span id='sensor1Current'></span></td>
+        </tr>
+        <tr>
+          <td>Sensor 2</td>
+          <td><span id='sensor2Current'></span></td>
+        </tr>
+        <tr>
+          <td>AirTemp</td>
+          <td><span id='sensor3Current'></span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <canvas id="chart"></canvas>
+</div>
+
 <script>
   var ctx = document.getElementById('chart').getContext('2d');
   var myChart = new Chart(ctx,
@@ -46,115 +56,113 @@
           label: 'Sensor 1',
           data: [],
           backgroundColor: window.chartColors.red,
-					borderColor: window.chartColors.red,
-					fill: false,
-      borderWidth: 1
-      },
-      {
+          borderColor: window.chartColors.red,
+          fill: false,
+          borderWidth: 1
+        },
+        {
           label: 'Sensor 2',
           backgroundColor: window.chartColors.blue,
-					borderColor: window.chartColors.blue,
-					fill: false,
+          borderColor: window.chartColors.blue,
+          fill: false,
           data: [],
-      },
-      {
+        },
+        {
           label: 'Sensor 3',
           backgroundColor: window.chartColors.green,
-					borderColor: window.chartColors.green,
-					fill: false,
+          borderColor: window.chartColors.green,
+          fill: false,
           data: [],
-      },
-      {
+        },
+        {
           label: 'Smoker Target',
           backgroundColor: window.chartColors.grey,
-					borderColor: window.chartColors.green,
-					fill: false,
-          data: [ { x: '{{cook.Start}}', y: '{{cook.SmokerTarget}}' }, 
-                  { x: '{{currentDT}}', y: '{{cook.SmokerTarget}}' }],
-      },
-      {
+          borderColor: window.chartColors.green,
+          fill: false,
+          data: [{ x: '{{cook.Start}}', y: '{{cook.SmokerTarget}}' },
+          { x: '{{currentDT}}', y: '{{cook.SmokerTarget}}' }],
+        },
+        {
           label: 'Target',
           backgroundColor: window.chartColors.grey,
-					borderColor: window.chartColors.green,
-					fill: false,
-          data: [ { x: '{{cook.Start}}', y: '{{cook.Target}}' }, 
-                  { x: '{{currentDT}}', y: '{{cook.Target}}' }],
+          borderColor: window.chartColors.green,
+          fill: false,
+          data: [{ x: '{{cook.Start}}', y: '{{cook.Target}}' },
+          { x: '{{currentDT}}', y: '{{cook.Target}}' }],
+        },
+        ]
       },
-    ]},
-  options: {
-    scales: {
-      xAxes: [{
-        type: 'time',
-        time: { displayFormats: { quarter: 'h:mm a' } }
-      }]
-    }
-  }
-  });
+      options: {
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: { displayFormats: { quarter: 'h:mm a' } }
+          }]
+        }
+      }
+    });
 
 </script>
 
-<script type=text/javascript>
+<script type=text/javascript> 
+  $SCRIPT_ROOT={{ request.script_root|tojson|safe }}; 
+  lastUpdate=null;
 
-  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-  lastUpdate = null
+  $(document).ready(function() 
+    { 
+      getData(); 
 
-  $(document).ready(function()
-  {
-    getData();
-
-    setInterval(getData,10000);
-
-    function getData()
-    {
-      var url = $SCRIPT_ROOT + '/getdata'
-      
-      if(lastUpdate != null)
-      {
-        url = url.concat('?lastUpdate=',lastUpdate);
-      }
-
-      $.getJSON(url, {} , 
-      function(data) 
-      {
-        updateChart(data['Temp1'], 0);
-        updateChart(data['Temp2'], 1);
-        updateChart(data['Temp3'], 2);
-        
-        myChart.data.datasets[3].data = data['smokerTarget'];
-        myChart.data.datasets[4].data = data['target'];
-        lastUpdate = data['lastUpdate']
-        
-        $("#Duration").text(data['duration']);
-        $("#sensor1Current").text(data['Sensor1Current']);
-        $("#sensor2Current").text(data['Sensor2Current']);
-        $("#sensor3Current").text(data['Sensor3Current']);
-
-        // re-render the chart
-        myChart.update();
-      });
-      return false;
-    }
-
-    function updateChart(newData, offset)
-    {
-      if(newData.length > 0)
-      {
-        if(myChart.data.datasets[offset].data.length == 0)
+      setInterval(getData,10000); 
+      function getData() 
+      { 
+        var cookId = $("#CookId").text(); 
+        var url = $SCRIPT_ROOT + '/getdata?cookId=' + cookId; 
+        if(lastUpdate !=null) 
         {
-          myChart.data.datasets[offset].data = newData;  
+          url=url.concat('&lastUpdate=',lastUpdate);
         }
-        else
+
+        $.getJSON(url, {} , 
+        function(data) 
         {
-          myChart.data.datasets[offset].data.forEach(dataItem => {
-            newData.push(dataItem);  
-          });
+          updateChart(data['Temp1'], 0); 
+          updateChart(data['Temp2'], 1); 
+          updateChart(data['Temp3'], 2);
           
-          myChart.data.datasets[offset].data = newData;
+          myChart.data.datasets[3].data=data['smokerTarget']; 
+          myChart.data.datasets[4].data=data['target'];
+          lastUpdate=data['lastUpdate']; 
+          $("#Duration").text(data['duration']);
+          $("#sensor1Current").text(data['Sensor1Current']); 
+          $("#sensor2Current").text(data['Sensor2Current']);
+          $("#sensor3Current").text(data['Sensor3Current']);
+          
+          // re-render the chart 
+          myChart.update(); 
+        }); 
+        return false; 
+      }
+
+      function updateChart(newData, offset) 
+      { 
+        if(newData.length> 0)
+        {
+          if(myChart.data.datasets[offset].data.length == 0)
+          {
+            myChart.data.datasets[offset].data = newData;  
+          }
+          else
+          {
+            myChart.data.datasets[offset].data.forEach(dataItem => {
+              newData.push(dataItem);  
+            });
+            
+            myChart.data.datasets[offset].data = newData;
+          }
         }
       }
-    }
-  });
+    });
 
 </script>
 
-{% endblock %}              
+{% endblock %}

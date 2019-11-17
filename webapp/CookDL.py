@@ -18,10 +18,20 @@ class Cook:
         self.Target = 0
         self.Duration = ''
 
-def getCurrentCook():
+def getCurrentCookId():
     db = wadb.get_db()
 
-    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks WHERE CookEnd is null').fetchone()
+    rtn = db.execute('SELECT CookId FROM Cooks WHERE CookEnd is null').fetchone()
+    
+    if rtn is not None:
+        return rtn[0]
+    else:
+        return 0
+
+def getCook(cookId):
+    db = wadb.get_db()
+
+    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks WHERE CookId = ?', str(cookId), ).fetchone()
     newCook = Cook()
     
     if rtn is not None:
@@ -36,6 +46,40 @@ def getCurrentCook():
         newCook.Duration = str(calcDuration)
     return newCook
 
+def getCooks():
+    db = wadb.get_db()
+
+    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks').fetchall()
+    cooks = []
+    
+    print(rtn)
+
+    if rtn is not None:
+        for x in rtn:
+            cook = objectifyCook(x)
+            cooks.append(cook)
+    return cooks
+
+def objectifyCook(cookList):
+    
+    cook = Cook()
+    
+    cook.CookId = cookList[0]
+    cook.Title = cookList[1]
+    cook.Start = cookList[2]
+    cook.End = cookList[3]
+    cook.SmokerTarget = cookList[4]
+    cook.Target = cookList[5]
+
+    if cook.End:
+        fromTime = cook.End
+    else:
+        fromTime - datetime.now()
+        
+    calcDuration = (fromTime - cook.Start)
+    cook.Duration = str(calcDuration)
+    return cook
+
 def startCook(title, smokerTarget, target):
     db = wadb.get_db()
     
@@ -49,5 +93,5 @@ def endCurrentCook():
 
 if __name__ == "__main__":
     startCook('TestTitle')
-    newCook = getCurrentCook()
+    newCook = getCurrentCookId()
     print(newCook)
