@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Tue Nov 5 17:32:56 2019
+-- File generated with SQLiteStudio v3.2.1 on Sun Nov 17 17:45:15 2019
 --
 -- Text encoding used: System
 --
@@ -7,7 +7,7 @@ PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
 -- Table: Cooks
-CREATE TABLE Cooks (CookId INTEGER PRIMARY KEY AUTOINCREMENT, Title nvarchar [256], CookStart TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, CookEnd TIMESTAMP, SmokerTarget FLOAT, Target FLOAT);
+CREATE TABLE Cooks (CookId INTEGER PRIMARY KEY AUTOINCREMENT, Title nvarchar [256], CookStart TIMESTAMP NOT NULL, CookEnd TIMESTAMP, SmokerTarget DOUBLE, Target DOUBLE);
 
 -- Table: ErrorLog
 CREATE TABLE ErrorLog (ErroLogId INTEGER PRIMARY KEY AUTOINCREMENT, EventDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, Error TEXT NOT NULL);

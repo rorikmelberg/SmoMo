@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+<script src="static/utils.js"></script>
+
+<div class="container">
+  <div class="row">
+    <div class='class="col-lg"'>
+      <table class="table">
+        <tr>
+          <td></td>
+          <td>Title</td>
+          <td>Start</td>
+          <td>End</td>
+          <td>Duration</td>
+        </tr>
+        {% for cook in cooks %}
+        <tr>
+            <tr>
+                <td><a href="/selectcook?cookId={{ cook.CookId }}">Select</a></td>
+                <td>{{ cook.Title }}</td>
+                <td>{{ cook.StartFormatted }}</td>
+                <td>{{ cook.EndFormatted }}</td>
+                <td>{{ cook.Duration }}</td>
+                <td><a href="/deletecook?cookId={{ cook.CookId }}">Delete</a></td>
+              </tr>
+        </tr>
+      {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
