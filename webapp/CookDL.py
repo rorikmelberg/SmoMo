@@ -8,12 +8,16 @@ import webapp.db as wadb
 
 from datetime import datetime
 
+dateFormatter = '%m/%d/%Y - %H:%M:%S'
+
 class Cook:
     def __init__(self):
         self.CookId = 0
         self.Title = ''
         self.Start = ''
         self.End = ''
+        self.StartFormatted = ''
+        self.EndFormatted = ''
         self.SmokerTarget = 0
         self.Target = 0
         self.Duration = ''
@@ -30,21 +34,13 @@ def getCurrentCookId():
 
 def getCook(cookId):
     db = wadb.get_db()
-
-    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks WHERE CookId = ?', str(cookId), ).fetchone()
-    newCook = Cook()
     
-    if rtn is not None:
-        newCook.CookId = rtn[0]
-        newCook.Title = rtn[1]
-        newCook.Start = rtn[2]
-        newCook.End = rtn[3]
-        newCook.SmokerTarget = rtn[4]
-        newCook.Target = rtn[5]
-
-        calcDuration = (datetime.now() - newCook.Start)
-        newCook.Duration = str(calcDuration)
-    return newCook
+    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks WHERE CookId = ?', (str(cookId), )).fetchone()
+    if rtn:
+        cook = objectifyCook(rtn)
+    else:
+        cook = Cook()
+    return cook
 
 def getCooks():
     db = wadb.get_db()
@@ -60,8 +56,16 @@ def getCooks():
             cooks.append(cook)
     return cooks
 
+def delete(cookId):
+    db = wadb.get_db()
+
+    rtn = db.execute('DELETE FROM TempLog where CookId = ?', (cookId,))
+    rtn = db.execute('DELETE FROM Cooks where CookId = ?', (cookId,))
+    db.commit()
+    print(rtn)
+
+
 def objectifyCook(cookList):
-    
     cook = Cook()
     
     cook.CookId = cookList[0]
@@ -70,14 +74,17 @@ def objectifyCook(cookList):
     cook.End = cookList[3]
     cook.SmokerTarget = cookList[4]
     cook.Target = cookList[5]
-
+    cook.StartFormatted = cook.Start.strftime(dateFormatter)
+    
     if cook.End:
         fromTime = cook.End
+        cook.EndFormatted = cook.End.strftime(dateFormatter)
     else:
-        fromTime - datetime.now()
-        
+        fromTime = datetime.now()
+        cook.EndFormatted = 'Running'
+
     calcDuration = (fromTime - cook.Start)
-    cook.Duration = str(calcDuration)
+    cook.Duration = dh.printNiceTimeDelta(calcDuration)
     return cook
 
 def startCook(title, smokerTarget, target):
@@ -92,6 +99,6 @@ def endCurrentCook():
     db.commit()
 
 if __name__ == "__main__":
-    startCook('TestTitle')
+    startCook('TestTitle', 123, 123)
     newCook = getCurrentCookId()
     print(newCook)

@@ -1,12 +1,18 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>End Cook</h2>
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    Title: {{ title }}
-    <input type='submit' value='End Smoke'>
-  </form>
+<form method="post">
+  <div class="container">
+    <div class="row">
+      <div class='col'>
+        <h2>End Cook</h2>
+        Title: {{ title }}
+        <input type='submit' value='End Cook'>
+      </div>
+    </div>
+  </div>
+</form>
 {% endblock %}

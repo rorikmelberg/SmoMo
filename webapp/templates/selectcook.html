@@ -9,7 +9,7 @@
 <div class="container">
   <div class="row">
     <div class='class="col-lg"'>
-      <table>
+      <table class="table">
         <tr>
           <td></td>
           <td>Title</td>
@@ -22,9 +22,10 @@
             <tr>
                 <td><a href="/selectcook?cookId={{ cook.CookId }}">Select</a></td>
                 <td>{{ cook.Title }}</td>
-                <td>{{ cook.Start }}</td>
-                <td>{{ cook.End }}</td>
+                <td>{{ cook.StartFormatted }}</td>
+                <td>{{ cook.EndFormatted }}</td>
                 <td>{{ cook.Duration }}</td>
+                <td><a href="/deletecook?cookId={{ cook.CookId }}">Delete</a></td>
               </tr>
         </tr>
       {% endfor %}

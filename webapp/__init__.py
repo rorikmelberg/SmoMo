@@ -3,6 +3,7 @@ import functools
 from webapp.db import get_db
 import webapp.CookDL as CookDL
 import webapp.TempDL as TempDL
+import webapp.SMSession as SMSession
 # import memcached
 
 from flask import Blueprint
@@ -59,12 +60,12 @@ def create_app(test_config=None):
     @app.route('/')
     @app.route('/index')
     def index():
-        cookId = session.get('CookId', 0)
+        cookId = SMSession.getCookId()
         
         if cookId == 0:
             cookId = CookDL.getCurrentCookId()
-            session['CookId'] = cookId
-        
+            SMSession.setCookId(cookId)
+        print(cookId)
         currentCook = CookDL.getCook(cookId)
 
         latestTime = datetime(2019,1,1)
@@ -109,6 +110,9 @@ def create_app(test_config=None):
                 smokerTarget =  request.form["smokerTarget"]
                 target =  request.form["target"]
                 CookDL.startCook(title, smokerTarget, target)
+                cookId = CookDL.getCurrentCookId()
+                SMSession.setCookId(cookId)
+                
             else:
                 CookDL.endCurrentCook()    
             return redirect(url_for('index'))
@@ -120,20 +124,26 @@ def create_app(test_config=None):
                 cook = CookDL.getCook(currentCookId)
                 title = cook.Title
                 return render_template('endcook.html', title=title)
-
-
-    @app.route('/selectcook', methods=['GET','POST']) 
+    
+    @app.route('/selectcook', methods=['GET']) 
     def selectCook():
         
         cookId = request.args.get('cookId')
 
         if cookId:
-            session['CookId'] = cookId
+            SMSession.setCookId(cookId)
             return redirect(url_for('index'))
 
         else:
             cooks = CookDL.getCooks()
             return render_template('selectcook.html', cooks=cooks)
+
+    @app.route('/deletecook', methods=['GET']) 
+    def deleteCook():
+        
+        cookId = request.args.get('cookId')
+        CookDL.delete(cookId)
+        return redirect(url_for('selectCook'))
 
     @app.route('/getdata', methods=['GET']) 
     def GetCookData():

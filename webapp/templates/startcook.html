@@ -1,14 +1,20 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>Start Cook</h1>
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    Title: <input type='text' id='title' name='title'/><br/>
-    Smoker Target: <input type='text' id='smokerTarget' name='smokerTarget'/><br/>
-    Target: <input type='text' id='target' name='target'/><br/>
-    <input type='submit' value='Start Cook'><br/>
-  </form>
+<form method="post">
+  <div class="container">
+    <div class="row">
+      <div class='col'>
+        <h2>Start Cook</h2>
+        Title: <input type='text' id='title' name='title' /><br />
+        Smoker Target: <input type='text' id='smokerTarget' name='smokerTarget' /><br />
+        Target: <input type='text' id='target' name='target' /><br />
+        <input type='submit' value='Start Cook'><br />
+      </div>
+    </div>
+  </div>
+</form>
 {% endblock %}
