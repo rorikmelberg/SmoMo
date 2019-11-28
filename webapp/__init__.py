@@ -65,7 +65,7 @@ def create_app(test_config=None):
         if cookId == 0:
             cookId = CookDL.getCurrentCookId()
             SMSession.setCookId(cookId)
-        print(cookId)
+        
         currentCook = CookDL.getCook(cookId)
 
         latestTime = datetime(2019,1,1)
@@ -214,8 +214,5 @@ def create_app(test_config=None):
 
     from . import db
     db.init_app(app)
-
-    from . import cook
-    app.register_blueprint(cook.bp)
 
     return app

@@ -48,8 +48,6 @@ def getCooks():
     rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks').fetchall()
     cooks = []
     
-    print(rtn)
-
     if rtn is not None:
         for x in rtn:
             cook = objectifyCook(x)
@@ -62,8 +60,6 @@ def delete(cookId):
     rtn = db.execute('DELETE FROM TempLog where CookId = ?', (cookId,))
     rtn = db.execute('DELETE FROM Cooks where CookId = ?', (cookId,))
     db.commit()
-    print(rtn)
-
 
 def objectifyCook(cookList):
     cook = Cook()
