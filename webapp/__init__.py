@@ -1,8 +1,8 @@
 import os
 import functools
 from webapp.db import get_db
-import webapp.CookDL as CookDL
-import webapp.TempDL as TempDL
+import webapp.DAL.CookDL as CookDL
+import webapp.DAL.TempDL as TempDL
 import webapp.SMSession as SMSession
 # import memcached
 
@@ -172,7 +172,7 @@ def create_app(test_config=None):
             temps = []
             
             if date:
-                temps = TempDL.getTempsForCookUpdate(currentCook.CookId, date)
+                temps = TempDL.getTempsForCook(currentCook.CookId, date)
             else:
                 temps = TempDL.getTempsForCook(currentCook.CookId)
             
@@ -180,29 +180,31 @@ def create_app(test_config=None):
             temps2 = []
             temps3 = []
             
+            # get current temps from the first item in the list
             if len(temps) > 0:
-                allData['Sensor1Current'] = temps[0].Temp1
-                allData['Sensor2Current'] = temps[0].Temp2
-                allData['Sensor3Current'] = temps[0].Temp3
-
+                currentTemp = temps[-1]  # last in the list
+                allData['Sensor1Current'] = '{0:.2f}'.format(currentTemp.Temp1)
+                allData['Sensor2Current'] = '{0:.2f}'.format(currentTemp.Temp2)
+                allData['Sensor3Current'] = '{0:.2f}'.format(currentTemp.Temp3)
 
             for x in temps:
                 formattedDate = x.EventDate.strftime(dateFormatString)
+                if x.Temp1 > 0:
+                    temp1 = {}
+                    temp1['x'] = formattedDate
+                    temp1['y'] = x.Temp1
+                    temps1.append(temp1)
 
-                temp1 = {}
-                temp1['x'] = formattedDate
-                temp1['y'] = x.Temp1
-                temps1.append(temp1)
-
-                temp2 = {}
-                temp2['x'] = formattedDate
-                temp2['y'] = x.Temp2
-                temps2.append(temp2)
-
-                temp3 = {}
-                temp3['x'] = formattedDate
-                temp3['y'] = x.Temp3
-                temps3.append(temp3)
+                if x.Temp2 > 0:
+                    temp2 = {}
+                    temp2['x'] = formattedDate
+                    temp2['y'] = x.Temp2
+                    temps2.append(temp2)
+                if x.Temp3 > 0:
+                    temp3 = {}
+                    temp3['x'] = formattedDate
+                    temp3['y'] = x.Temp3
+                    temps3.append(temp3)
             
             allData['Temp1'] = temps1
             allData['Temp2'] = temps2
