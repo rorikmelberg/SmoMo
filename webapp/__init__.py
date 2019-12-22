@@ -189,21 +189,22 @@ def create_app(test_config=None):
 
             for x in temps:
                 formattedDate = x.EventDate.strftime(dateFormatString)
+                if x.Temp1 > 0:
+                    temp1 = {}
+                    temp1['x'] = formattedDate
+                    temp1['y'] = x.Temp1
+                    temps1.append(temp1)
 
-                temp1 = {}
-                temp1['x'] = formattedDate
-                temp1['y'] = x.Temp1
-                temps1.append(temp1)
-
-                temp2 = {}
-                temp2['x'] = formattedDate
-                temp2['y'] = x.Temp2
-                temps2.append(temp2)
-
-                temp3 = {}
-                temp3['x'] = formattedDate
-                temp3['y'] = x.Temp3
-                temps3.append(temp3)
+                if x.Temp2 > 0:
+                    temp2 = {}
+                    temp2['x'] = formattedDate
+                    temp2['y'] = x.Temp2
+                    temps2.append(temp2)
+                if x.Temp3 > 0:
+                    temp3 = {}
+                    temp3['x'] = formattedDate
+                    temp3['y'] = x.Temp3
+                    temps3.append(temp3)
             
             allData['Temp1'] = temps1
             allData['Temp2'] = temps2

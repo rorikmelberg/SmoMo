@@ -25,7 +25,8 @@
     </div>
     <div class='col'>
       Sensor 3: <span id='sensor3Current'></span><br/>
-      <input id='autoUpdate' type='checkbox' onclick="AutoUpdate();">Auto Update</input>
+      <input id='autoUpdate' type='checkbox' onclick="AutoUpdate();">Auto Update</input><br/>
+      <small class="text-muted">Last Update: <span id='LastUpdate'></span><br /></small>
     </div>
   </div>
 </div>
@@ -120,12 +121,19 @@
       var url = $SCRIPT_ROOT + '/getdata?cookId=' + cookId; 
       if(lastUpdate !=null) 
       {
-        url=url.concat('&lastUpdate=',lastUpdate);
+        url = url.concat('&lastUpdate=',lastUpdate);
       }
 
       $.getJSON(url, {} , 
       function(data) 
       {
+        var pad2 = new Padder(2);
+
+        var today = new Date();
+        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+        var time = pad2(today.getHours()) + ":" + pad2(today.getMinutes()) + ":" + pad2(today.getSeconds());
+        var dateTime = date + ' ' + time;
+
         updateChart(data['Temp1'], 0); 
         updateChart(data['Temp2'], 1); 
         updateChart(data['Temp3'], 2);
@@ -138,6 +146,8 @@
         $("#sensor2Current").text(data['Sensor2Current']);
         $("#sensor3Current").text(data['Sensor3Current']);
         
+        $("#LastUpdate").text(dateTime);
+
         // re-render the chart 
         myChart.update(); 
       }); 
@@ -154,11 +164,9 @@
         }
         else
         {
-          myChart.data.datasets[offset].data.forEach(dataItem => {
-            newData.push(dataItem);  
-          });
+          var completeData = myChart.data.datasets[offset].data.concat(newData);
           
-          myChart.data.datasets[offset].data = newData;
+          myChart.data.datasets[offset].data = completeData;
         }
       }
     }
@@ -167,8 +175,11 @@
     {
       if($("#autoUpdate").is(':checked'))
       {
-        interval = setInterval(getData,10000); 
+        // Get a refresh now
+        getData();
 
+        // Schedule Refresh
+        interval = setInterval(getData,10000); 
       }
       else
       {
