@@ -3,8 +3,8 @@ import functools
 from webapp.db import get_db
 import webapp.DAL.CookDL as CookDL
 import webapp.DAL.TempDL as TempDL
+import webapp.DAL.HWTempDL as HWTempDL
 import webapp.SMSession as SMSession
-# import memcached
 
 from flask import Blueprint
 from flask import flash
@@ -213,6 +213,41 @@ def create_app(test_config=None):
             return jsonify(allData)
 
         return jsonify('')
+
+
+    @app.route('/recorddata', methods=['GET']) 
+    def RecordData():
+        cookId = CookDL.getCurrentCookId()
+        
+        # if DEBUG:
+        #     print("CookId: {0}".format(cookId))
+
+        if cookId > 0:
+            
+            # Number of samplet to take
+            numOfSamples = 3
+
+            tempSamples = []
+            tempFinal = []
+
+            for i in range(numOfSamples):
+                tempSamples.append(HWTempDL.getTemps())
+                tempFinal.append(0.0)
+
+            for tempSample in tempSamples:
+                tempSampleCount = 0
+                for temp in tempSample:
+                    tempFinal[tempSampleCount] = tempFinal[tempSampleCount] + temp
+                    tempSampleCount = tempSampleCount + 1
+
+            tempSampleCount = 0
+            for temp in tempFinal:
+                tempFinal[tempSampleCount] = tempFinal[tempSampleCount] / numOfSamples
+                tempSampleCount = tempSampleCount + 1
+
+            TempDL.logTemps(tempFinal, cookId)
+        
+        return jsonify('OK')
 
     from . import db
     db.init_app(app)

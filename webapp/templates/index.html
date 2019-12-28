@@ -25,7 +25,8 @@
     </div>
     <div class='col'>
       Sensor 3: <span id='sensor3Current'></span><br/>
-      <input id='autoUpdate' type='checkbox' onclick="AutoUpdate();">Auto Update</input><br/>
+      <input id='updateButton' type='button' onclick="getData();" value='Update'></input>
+      <input id='autoUpdate' type='checkbox' onclick="AutoUpdate();">Auto</input><br/>
       <small class="text-muted">Last Update: <span id='LastUpdate'></span><br /></small>
     </div>
   </div>
@@ -131,7 +132,7 @@
 
         var today = new Date();
         var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-        var time = pad2(today.getHours()) + ":" + pad2(today.getMinutes()) + ":" + pad2(today.getSeconds());
+        var time = pad2.pad(today.getHours()) + ":" + pad2.pad(today.getMinutes()) + ":" + pad2.pad(today.getSeconds());
         var dateTime = date + ' ' + time;
 
         updateChart(data['Temp1'], 0); 

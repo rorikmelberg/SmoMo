@@ -59,6 +59,7 @@ def delete(cookId):
 
     rtn = db.execute('DELETE FROM TempLog where CookId = ?', (cookId,))
     rtn = db.execute('DELETE FROM Cooks where CookId = ?', (cookId,))
+
     db.commit()
 
 def objectifyCook(cookList):
@@ -91,7 +92,7 @@ def startCook(title, smokerTarget, target):
 
 def endCurrentCook():
     db = wadb.get_db()
-    db.execute('UPDATE Cooks SET CookEnd = datetime(\'now\') where CookEnd is NULL')
+    db.execute('UPDATE Cooks SET CookEnd = ? where CookEnd is NULL', (datetime.now(),))
     db.commit()
 
 if __name__ == "__main__":

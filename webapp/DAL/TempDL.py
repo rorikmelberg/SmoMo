@@ -2,7 +2,7 @@ import sqlite3
 import click
 from flask import current_app, g
 from flask.cli import with_appcontext
-import datetime
+from datetime import datetime
 
 import webapp.db as wadb
 import webapp.DateHelpers as dh
@@ -42,19 +42,16 @@ def getTempsForCook(cookId, dateSince = None):
         temp.CookId = x[5]
         
         temps.append(temp)
+
     return temps
 
 def logTemps(temps, cookId):
-    if DEBUG:
-        print("value: {0} {1} {2} {3}".format(temps[0], temps[1], temps[2], cookId))
-            
-    conn=sqlite3.connect(sqliteFile)
-    curs=conn.cursor()
-    curs.execute("INSERT INTO TempLog (EventDate, Temp1, Temp2, Temp3, CookId) VALUES(?, ?, ?, ?, ?)", (datetime.now(), temps[0], temps[1], temps[2], cookId))
-
-    # commit the changes
-    conn.commit()
-    conn.close()
+    # if DEBUG:
+    #    print("value: {0} {1} {2} {3}".format(temps[0], temps[1], temps[2], cookId))
+   
+    db = wadb.get_db()
+    rtn = db.execute('INSERT INTO TempLog (EventDate, Temp1, Temp2, Temp3, CookId) VALUES(?, ?, ?, ?, ?)', (datetime.now(), temps[0], temps[1], temps[2], cookId, ))
+    db.commit()
 
 if __name__ == "__main__":
     getTempsForCook(1)
