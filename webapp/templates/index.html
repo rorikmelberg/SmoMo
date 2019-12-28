@@ -25,7 +25,7 @@
     </div>
     <div class='col'>
       Sensor 3: <span id='sensor3Current'></span><br/>
-      <input id='updateButton' type='button' onclick="getData();" value='Update'></input>
+      <input id='updateButton' type='button' onclick="getData(true);" value='Update'></input>
       <input id='autoUpdate' type='checkbox' onclick="AutoUpdate();">Auto</input><br/>
       <small class="text-muted">Last Update: <span id='LastUpdate'></span><br /></small>
     </div>
@@ -111,10 +111,10 @@
 
   $(document).ready(function() 
     { 
-      getData(); 
+      getData(false); 
     });
 
-  function getData() 
+  function getData(forceUpdate) 
     { 
       console.log("Getting data");
 
@@ -123,6 +123,11 @@
       if(lastUpdate !=null) 
       {
         url = url.concat('&lastUpdate=',lastUpdate);
+      }
+
+      if(forceUpdate)
+      {
+        url = url.concat('&forceUpdate=True');
       }
 
       $.getJSON(url, {} , 
@@ -177,7 +182,7 @@
       if($("#autoUpdate").is(':checked'))
       {
         // Get a refresh now
-        getData();
+        getData(false);
 
         // Schedule Refresh
         interval = setInterval(getData,10000); 

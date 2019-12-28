@@ -148,10 +148,14 @@ def create_app(test_config=None):
     @app.route('/getdata', methods=['GET']) 
     def GetCookData():
         date = request.args.get('lastUpdate')
+        forceUpdate = request.args.get('forceUpdate')
         cookId = request.args.get('cookId')
 
         currentCook = CookDL.getCook(cookId)
         
+        if(forceUpdate):
+            RecordData()
+
         if currentCook.CookId > 0:
             allData = {}
 
