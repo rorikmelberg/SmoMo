@@ -3,7 +3,8 @@ import functools
 from webapp.db import get_db
 import webapp.DAL.CookDL as CookDL
 import webapp.DAL.TempDL as TempDL
-import webapp.DAL.HWTempDL as HWTempDL
+import webapp.DAL.SubscriptionDL as SubscriptionDL
+import webapp.BO.CookBO as CookBO
 import webapp.SMSession as SMSession
 
 from flask import Blueprint
@@ -20,21 +21,6 @@ from datetime import datetime
 
 dateFormatString = '%Y-%m-%d %H:%M:%S.%f'
 
-def GenerateTargetData(start, end, value):
-    series = []
-    
-    valPair = {}
-    valPair['x'] = start.strftime(dateFormatString)
-    valPair['y'] = value
-    series.append(valPair)
-
-    valPair = {}
-    valPair['x'] = end.strftime(dateFormatString)
-    valPair['y'] = value
-    series.append(valPair)
-
-    return series
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -47,7 +33,7 @@ def create_app(test_config=None):
         app.config.from_pyfile('config.py')
     else:
         app.config.from_mapping(test_config)
-    
+
     # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)
@@ -97,11 +83,11 @@ def create_app(test_config=None):
                                                 minTemp = minTemp,
                                                 maxTemp = maxTemp,
                                                 temps = temps,
-                                                values=temps,
+                                                values = temps,
                                                 currentDT=datetime.now())
 
     @app.route('/editcook', methods=['GET', 'POST'])
-    def startcook():
+    def editcook():
         currentCookId = CookDL.getCurrentCookId()
 
         if request.method == "POST":
@@ -112,22 +98,33 @@ def create_app(test_config=None):
                 CookDL.startCook(title, smokerTarget, target)
                 cookId = CookDL.getCurrentCookId()
                 SMSession.setCookId(cookId)
-                
             else:
                 CookDL.endCurrentCook()    
-            return redirect(url_for('index'))
+            
+            return redirect(url_for('editcook'))
 
         else:
-            if currentCookId == 0:
-                return render_template('startcook.html')
-            else:
-                cook = CookDL.getCook(currentCookId)
-                title = cook.Title
-                return render_template('endcook.html', title=title)
+            cook = CookDL.getCook(currentCookId)
+            subs = SubscriptionDL.getSubscriptionsForCook(currentCookId)
+            title = cook.Title
+            return render_template('editcook.html', cook = cook,
+                                                    subs = subs)
     
+    @app.route('/addsubscription', methods=['POST'])
+    def addsubscription():
+        email = request.form["Email"]
+        cookId = request.form["CookId"]
+        SubscriptionDL.insertSubscription(cookId, email)
+        return redirect(url_for('editcook'))
+
+    @app.route('/deletesub', methods=['GET'])
+    def deletesubscription():
+        subscriptionId = request.args.get('subscriptionId')
+        SubscriptionDL.delete(subscriptionId)
+        return redirect(url_for('editcook'))
+
     @app.route('/selectcook', methods=['GET']) 
     def selectCook():
-        
         cookId = request.args.get('cookId')
 
         if cookId:
@@ -151,109 +148,18 @@ def create_app(test_config=None):
         forceUpdate = request.args.get('forceUpdate')
         cookId = request.args.get('cookId')
 
-        currentCook = CookDL.getCook(cookId)
-        
         if(forceUpdate):
             RecordData()
 
-        if currentCook.CookId > 0:
-            allData = {}
-
-            endTime = datetime.now()
-
-            if currentCook.End:
-                endTime = currentCook.End
-            
-            allData['duration'] = currentCook.Duration
-            allData['cookStart']= currentCook.Start.strftime(dateFormatString)
-            allData['currentDT']=datetime.now()
-            
-            allData['smokerTarget'] = GenerateTargetData(currentCook.Start, endTime, currentCook.SmokerTarget)
-            allData['target'] = GenerateTargetData(currentCook.Start, endTime, currentCook.Target)
-            currentDate = endTime
-            allData['lastUpdate'] = currentDate.strftime(dateFormatString)
-            
-            temps = []
-            
-            if date:
-                temps = TempDL.getTempsForCook(currentCook.CookId, date)
-            else:
-                temps = TempDL.getTempsForCook(currentCook.CookId)
-            
-            temps1 = []
-            temps2 = []
-            temps3 = []
-            
-            # get current temps from the first item in the list
-            if len(temps) > 0:
-                currentTemp = temps[-1]  # last in the list
-                allData['Sensor1Current'] = '{0:.2f}'.format(currentTemp.Temp1)
-                allData['Sensor2Current'] = '{0:.2f}'.format(currentTemp.Temp2)
-                allData['Sensor3Current'] = '{0:.2f}'.format(currentTemp.Temp3)
-
-            for x in temps:
-                formattedDate = x.EventDate.strftime(dateFormatString)
-                if x.Temp1 > 0:
-                    temp1 = {}
-                    temp1['x'] = formattedDate
-                    temp1['y'] = x.Temp1
-                    temps1.append(temp1)
-
-                if x.Temp2 > 0:
-                    temp2 = {}
-                    temp2['x'] = formattedDate
-                    temp2['y'] = x.Temp2
-                    temps2.append(temp2)
-                if x.Temp3 > 0:
-                    temp3 = {}
-                    temp3['x'] = formattedDate
-                    temp3['y'] = x.Temp3
-                    temps3.append(temp3)
-            
-            allData['Temp1'] = temps1
-            allData['Temp2'] = temps2
-            allData['Temp3'] = temps3
-
-            return jsonify(allData)
-
-        return jsonify('')
-
+        return CookBO.GetCookData(cookId, date)
 
     @app.route('/recorddata', methods=['GET']) 
     def RecordData():
-        cookId = CookDL.getCurrentCookId()
+        CookBO.RecordData()
         
-        # if DEBUG:
-        #     print("CookId: {0}".format(cookId))
-
-        if cookId > 0:
-            
-            # Number of samplet to take
-            numOfSamples = 3
-
-            tempSamples = []
-            tempFinal = []
-
-            for i in range(numOfSamples):
-                tempSamples.append(HWTempDL.getTemps())
-                tempFinal.append(0.0)
-
-            for tempSample in tempSamples:
-                tempSampleCount = 0
-                for temp in tempSample:
-                    tempFinal[tempSampleCount] = tempFinal[tempSampleCount] + temp
-                    tempSampleCount = tempSampleCount + 1
-
-            tempSampleCount = 0
-            for temp in tempFinal:
-                tempFinal[tempSampleCount] = tempFinal[tempSampleCount] / numOfSamples
-                tempSampleCount = tempSampleCount + 1
-
-            TempDL.logTemps(tempFinal, cookId)
-        
-        return jsonify('OK')
+        return jsonify('')
 
     from . import db
     db.init_app(app)
-
+    
     return app

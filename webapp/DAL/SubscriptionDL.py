@@ -7,42 +7,45 @@ import datetime
 import webapp.db as wadb
 import webapp.DateHelpers as dh
 
-class TempLog:
+class Subscription:
     def __init__(self):
-        self.TempLogId = 0
-        self.EventDate = ''
-        self.Temp1 = ''
-        self.Temp2 = ''
-        self.Temp3 = ''
-        self.CookId = 0
+        self.SubscriptionId = 0
+        self.CookId = ''
+        self.Email = ''
     
     def toString(self):
-        print('TemplogId: {0}, EventDate: {1}, Temp1: {2}, Temp2: {3}, Temp3: {4}, CookId: {5}'.format(self.TempLogId, self.EventDate, self.Temp1, self.Temp2, self.Temp3, self.CookId))
+        print('SubscriptionId: {0}, CookId: {1}, Email: {2}'.format(self.TempLogId, self.EventDate, self.Temp1, self.Temp2, self.Temp3, self.CookId))
 
-def getTempsForCook(cookId, dateSince = None):
+def getSubscriptionsForCook(cookId):
     db = wadb.get_db()
 
-    if dateSince == None:
-        rtn = db.execute('SELECT TempLogId, EventDate, Temp1, Temp2, Temp3, CookId '
-                        'FROM TempLog WHERE CookId = ? ', (cookId,)).fetchall()
-    else:
-        rtn = db.execute('SELECT TempLogId, EventDate, Temp1, Temp2, Temp3, CookId '
-                        'FROM TempLog WHERE CookId = ? '
-                        '  AND EventDate > ?', (cookId, dateSince)).fetchall()
+    rtn = db.execute('SELECT SubscriptionId, CookId, Email '
+                        'FROM Subscriptions WHERE CookId = ? ', (cookId,)).fetchall()
 
-    temps = []
+    subs = []
 
     for x in rtn:
-        temp = TempLog()
-        temp.TempLogId = x[0]
-        temp.EventDate = dh.convertTime(x[1])
-        temp.Temp1 = float('{0:.2f}'.format(x[2]))
-        temp.Temp2 = float('{0:.2f}'.format(x[3]))
-        temp.Temp3 = float('{0:.2f}'.format(x[4]))
-        temp.CookId = x[5]
+        sub = Subscription()
+        sub.SubscriptionId = x[0]
+        sub.CookId = x[1]
+        sub.Email = x[2]
         
-        temps.append(temp)
-    return temps
+        subs.append(sub)
+    
+    return subs
+
+def insertSubscription(cookId, email):
+    db = wadb.get_db()
+    
+    db.execute('INSERT INTO Subscriptions (CookId, Email) VALUES(?,?)', (cookId, email,))
+    
+    db.commit()
+
+def delete(subscriptionId):
+    db = wadb.get_db()
+    db.execute('DELETE FROM Subscriptions WHERE SubscriptionId = ?', (subscriptionId,))
+    db.commit()
+
 
 if __name__ == "__main__":
-    getTempsForCook(1)
+    getSubscriptionsForCook(1)

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+<form method="post" id='editcook' name='editcook'>
+  <div class="container">
+    <div class="row">
+      <div class='col'>
+        <h2>Start Cook</h2>
+        Title: <input type='text' id='title' name='title' value='{{ cook.Title }}' /><br />
+        Smoker Target: <input type='text' id='smokerTarget' name='smokerTarget' value='{{ cook.SmokerTarget }}' /><br />
+        Target: <input type='text' id='target' name='target' value='{{ cook.Target }}' /><br />
+        <input type='submit' value='Start Cook'> <input type='submit' value='End Cook'>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="container">
+  <div class="row">
+    <div class='col'>
+      <h3>Subscriptions</h3>
+      <table class="table">
+        <tr>
+          <td></td>
+          <td>Email</td>
+        </tr>
+        {% for sub in subs %}
+        <tr>
+            <tr>
+                <td>{{ sub.Email }}</td>
+                <td><a href="/deletesub?subscriptionId={{ sub.SubscriptionId }}">Delete</a></td>
+              </tr>
+        </tr>
+      {% endfor %}
+      </table>
+      <form id='AddSubscriptionForm' name='AddSubscriptionForm' action='addsubscription' method='post'>
+        <input type='hidden' id='CookId' name='CookId' value='{{ cook.CookId }}' /><br />
+        Add Subscription: <input type='text' id='Email' name='Email' /><br />
+        <input type='submit' value='Subscribe'>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
