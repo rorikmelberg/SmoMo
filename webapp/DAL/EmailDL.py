@@ -9,7 +9,7 @@ import ConfigParser
 import smtplib
 from email.mime.text import MIMEText
 
-def sendmail(fromaddr, toaddr, username, password, email_body, email_subject, smtpsrv, smtpport):
+def SendMail(fromaddr, toaddr, username, password, email_body, email_subject, smtpsrv, smtpport):
 	# Build the email
 	msg = MIMEText(email_body)
 	msg['Subject'] = email_subject
@@ -30,12 +30,17 @@ def sendmail(fromaddr, toaddr, username, password, email_body, email_subject, sm
 		print('Something went wrong when sending the email {}'.format(fromaddr))
 		print e
 
-
-
-#send email if there is a msg to send
-if msg != '':
-	Config = ConfigParser.ConfigParser()
-	Config.read("/home/pi/email.cfg")
-	msgSubject = 'BBQ Monitor Alert'
-	sendmail(ConfigSectionMap("Config")['smtpemail'], Email, ConfigSectionMap("Config")['smtpuser'], ConfigSectionMap("Config")['smtppass'], 
-		msg, msgSubject,smtpsrv= ConfigSectionMap("Config")['smtpsrv'], smtpport= ConfigSectionMap("Config")['smtpport'])
+def SendMessage(message):
+	#send email if there is a msg to send
+	if msg != '':
+		Config = ConfigParser.ConfigParser()
+		Config.read("/home/pi/email.cfg")
+		msgSubject = 'BBQ Monitor Alert'
+		sendmail(ConfigSectionMap("Config")['smtpemail'], 
+					Email, 
+					ConfigSectionMap("Config")['smtpuser'], 
+					ConfigSectionMap("Config")['smtppass'], 
+					msg, 
+					msgSubject,
+					smtpsrv= ConfigSectionMap("Config")['smtpsrv'],
+					smtpport= ConfigSectionMap("Config")['smtpport'])

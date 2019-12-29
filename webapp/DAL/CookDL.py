@@ -35,7 +35,7 @@ def getCurrentCookId():
 def getCook(cookId):
     db = wadb.get_db()
     
-    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks WHERE CookId = ?', (str(cookId), )).fetchone()
+    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target, ApproachAlert, ArrivedAlert, OverAlert FROM Cooks WHERE CookId = ?', (str(cookId), )).fetchone()
     if rtn:
         cook = objectifyCook(rtn)
     else:
@@ -45,7 +45,7 @@ def getCook(cookId):
 def getCooks():
     db = wadb.get_db()
 
-    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target FROM Cooks').fetchall()
+    rtn = db.execute('SELECT CookId, Title, CookStart, CookEnd, SmokerTarget, Target, ApproachAlert, ArrivedAlert, OverAlert FROM Cooks').fetchall()
     cooks = []
     
     if rtn is not None:
@@ -72,7 +72,10 @@ def objectifyCook(cookList):
     cook.SmokerTarget = cookList[4]
     cook.Target = cookList[5]
     cook.StartFormatted = cook.Start.strftime(dateFormatter)
-    
+    cook.ApproachAlert = cookList[6]
+    cook.ArrivedAlert = cookList[7]
+    cook.OverAlert = cookList[8]
+
     if cook.End:
         fromTime = cook.End
         cook.EndFormatted = cook.End.strftime(dateFormatter)
@@ -93,6 +96,18 @@ def startCook(title, smokerTarget, target):
 def endCurrentCook():
     db = wadb.get_db()
     db.execute('UPDATE Cooks SET CookEnd = ? where CookEnd is NULL', (datetime.now(),))
+    db.commit()
+
+def update(cook):
+    db = wadb.get_db()
+    db.execute('UPDATE Cooks '
+                    'SET Title = ?, '
+                    'SmokerTarget = ?, '
+                    'Target = ?, '
+                    'ApproachAlert = ?, '
+                    'ArrivedAlert = ?, '
+                    'OverAlert = ? '
+                'WHERE CookId = ?', (cook.Title, cook.SmokerTarget, cook.Target, cook.ApproachAlert, cook.ArrivedAlert, cook.OverAlert,cook.CookId,))
     db.commit()
 
 if __name__ == "__main__":

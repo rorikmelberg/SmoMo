@@ -156,7 +156,6 @@ def create_app(test_config=None):
     @app.route('/recorddata', methods=['GET']) 
     def RecordData():
         CookBO.RecordData()
-        
         return jsonify('')
 
     from . import db

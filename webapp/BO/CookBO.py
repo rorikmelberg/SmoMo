@@ -4,7 +4,7 @@ from webapp.db import get_db
 import webapp.DAL.CookDL as CookDL
 import webapp.DAL.TempDL as TempDL
 # only import if running on the PI
-# import webapp.DAL.HWTempDL as HWTempDL
+import webapp.DAL.HWTempDL as HWTempDL
 
 import webapp.BO.CookBO as CookBO
 
@@ -128,3 +128,5 @@ def RecordData():
         TempDL.logTemps(tempFinal, cookId)
     
     return jsonify('')
+
+# def ProcessSubscriptions(CookId)
